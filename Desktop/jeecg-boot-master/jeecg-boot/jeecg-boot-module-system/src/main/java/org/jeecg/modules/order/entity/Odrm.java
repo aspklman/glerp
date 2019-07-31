@@ -77,8 +77,10 @@ public class Odrm implements Serializable {
 	/**订单年月*/
 	private java.lang.String odrYymm;
 	/**订单类别1.正式 2.销样*/
+	@Dict(dicCode="odr_kind")
 	private java.lang.String odrKind;
 	/**订单性质1.正式 2.客户PO 3.预购*/
+	@Dict(dicCode="odr_type")
 	private java.lang.String odrType;
 	/**原订单厂别*/
 	private java.lang.String oriFctryNo;
