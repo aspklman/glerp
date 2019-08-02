@@ -151,6 +151,7 @@ public class Odrm implements Serializable {
 	/**审核时间*/
 	private java.lang.String verifyDt;
 	/**需成品鞋利库*/
+	@Dict(dicCode="yn_status")
 	private java.lang.String avaRmk;
 	/**外包bom配色*/
 	private java.lang.String matchNo;
@@ -165,7 +166,7 @@ public class Odrm implements Serializable {
 	private java.util.Date createTime;
 	/**修改人*/
 	private java.lang.String updateBy;
-	/**修改时间*/
+	/**修改时间888*/
 	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
     @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
 	private java.util.Date updateTime;
