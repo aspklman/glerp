@@ -41,6 +41,7 @@ public class Odrm implements Serializable {
 	/**冲销po信息*/
 	private java.lang.String poNo;
 	/**生产部别*/
+	@Dict(dicCode="pro_dept")
 	private java.lang.String proDept;
 	/**客户订单编号*/
 	private java.lang.String custOdrNo;
@@ -133,6 +134,7 @@ public class Odrm implements Serializable {
 	private java.lang.String proeDt;
 	/**实际生产栋别*/
 	private java.lang.String aproDept;
+	@Dict(dicCode="vacode")
 	/**增值代码*/
 	private java.lang.String vaCode;
 	/**条码批号*/
