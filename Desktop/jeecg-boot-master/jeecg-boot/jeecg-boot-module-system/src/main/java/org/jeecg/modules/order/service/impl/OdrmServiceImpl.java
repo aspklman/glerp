@@ -31,11 +31,16 @@ public class OdrmServiceImpl extends ServiceImpl<OdrmMapper, Odrm> implements IO
 	@Transactional
 	public void saveMain(Odrm odrm, List<Odrd> odrdList) {
 		odrmMapper.insert(odrm);
+		int sizeQtys = 0;	//订单主表之订单数量
 		for(Odrd entity:odrdList) {
 			//外键设置
 			entity.setOrderId(odrm.getId());
+			entity.setFactOdrNo(odrm.getFactOdrNo());	//取订单主表之订单编号，填写至订单明细表之订单编号列
+			sizeQtys = sizeQtys + entity.getSizeQty();	//订单明细表之订单数量累加
 			odrdMapper.insert(entity);
 		}
+		odrm.setOdrQty(sizeQtys);		//设置订单主表之订单数量
+		odrmMapper.updateById(odrm);	//更新订单主表
 	}
 
 	@Override
@@ -46,12 +51,18 @@ public class OdrmServiceImpl extends ServiceImpl<OdrmMapper, Odrm> implements IO
 		//1.先删除子表数据
 		odrdMapper.deleteByMainId(odrm.getId());
 		
+		int sizeQtys = 0;		//订单主表这订单数量
+		
 		//2.子表数据重新插入
 		for(Odrd entity:odrdList) {
 			//外键设置
 			entity.setOrderId(odrm.getId());
+			entity.setFactOdrNo(odrm.getFactOdrNo());	//取订单主表之订单编号，填写至订单明细表之订单编号列
+			sizeQtys = sizeQtys + entity.getSizeQty();
 			odrdMapper.insert(entity);
 		}
+		odrm.setOdrQty(sizeQtys);		//设置订单主表之订单数量
+		odrmMapper.updateById(odrm);	//更新订单主表
 	}
 
 	@Override

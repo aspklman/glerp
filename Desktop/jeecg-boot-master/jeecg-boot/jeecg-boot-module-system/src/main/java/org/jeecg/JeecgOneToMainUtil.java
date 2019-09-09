@@ -22,26 +22,26 @@ public class JeecgOneToMainUtil {
 	public static void main(String[] args) {
 		//第一步：设置主表配置
 		MainTableVo mainTable = new MainTableVo();
-		mainTable.setTableName("stylem");//表名
-		mainTable.setEntityName("Stylem");	 //实体名
-		mainTable.setEntityPackage("bom");	 //包名
-		mainTable.setFtlDescription("鞋型基本资料表");	 //描述
+		mainTable.setTableName("giftm");//表名
+		mainTable.setEntityName("Giftm");	 //实体名
+		mainTable.setEntityPackage("scan");	 //包名
+		mainTable.setFtlDescription("礼品鞋主表");	 //描述
 		
 		//第二步：设置子表集合配置
 		List<SubTableVo> subTables = new ArrayList<SubTableVo>();
 		//[1].子表一
 		SubTableVo po = new SubTableVo();
-		po.setTableName("styles");//表名
-		po.setEntityName("Styles");	    //实体名
-		po.setEntityPackage("bom");	        //包名
-		po.setFtlDescription("鞋型SIZE表");       //描述
+		po.setTableName("giftd");//表名
+		po.setEntityName("Giftd");	    //实体名
+		po.setEntityPackage("scan");	        //包名
+		po.setFtlDescription("礼品鞋明细表");       //描述
 		//子表外键参数配置
 		/*说明: 
 		 * a) 子表引用主表主键ID作为外键，外键字段必须以_ID结尾;
 		 * b) 主表和子表的外键字段名字，必须相同（除主键ID外）;
 		 * c) 多个外键字段，采用逗号分隔;
 		*/
-		po.setForeignKeys(new String[]{"style_id"});      //注意：一对多之子表，需另外增加此字段
+		po.setForeignKeys(new String[]{"gift_id"});      //注意：一对多之子表，需另外增加此字段
 		subTables.add(po);
 //		//[2].子表二
 //		SubTableVo po2 = new SubTableVo();

@@ -1,7 +1,6 @@
 package org.jeecg.modules.order.entity;
 
 import java.io.Serializable;
-import java.util.Date;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
@@ -37,6 +36,7 @@ public class Odrm implements Serializable {
 	/**品牌编号*/
 	private java.lang.String brandNo;
 	/**楦头肥度*/
+	@Dict(dicCode="last_type")
 	private java.lang.String lastWidth;
 	/**冲销po信息*/
 	private java.lang.String poNo;

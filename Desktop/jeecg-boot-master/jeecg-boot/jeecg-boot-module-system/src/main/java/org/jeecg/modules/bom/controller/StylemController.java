@@ -1,4 +1,4 @@
-package org.jeecg.modules.order.controller;
+package org.jeecg.modules.bom.controller;
 
 import java.io.UnsupportedEncodingException;
 import java.io.IOException;
@@ -21,11 +21,11 @@ import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.query.QueryGenerator;
 import org.jeecg.common.util.oConvertUtils;
-import org.jeecg.modules.order.entity.Odrd;
-import org.jeecg.modules.order.entity.Odrm;
-import org.jeecg.modules.order.vo.OdrmPage;
-import org.jeecg.modules.order.service.IOdrmService;
-import org.jeecg.modules.order.service.IOdrdService;
+import org.jeecg.modules.bom.entity.Styles;
+import org.jeecg.modules.bom.entity.Stylem;
+import org.jeecg.modules.bom.vo.StylemPage;
+import org.jeecg.modules.bom.service.IStylemService;
+import org.jeecg.modules.bom.service.IStylesService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -39,37 +39,37 @@ import lombok.extern.slf4j.Slf4j;
 import com.alibaba.fastjson.JSON;
 
  /**
- * @Description: 订单主表
+ * @Description: 鞋型基本资料表
  * @Author: jeecg-boot
- * @Date:   2019-07-20 10:01:01
+ * @Date:   2019-08-07 09:08:29
  * @Version: V1.0
  */
 @RestController
-@RequestMapping("/order/odrm")
+@RequestMapping("/bom/stylem")
 @Slf4j
-public class OdrmController {
+public class StylemController {
 	@Autowired
-	private IOdrmService odrmService;
+	private IStylemService stylemService;
 	@Autowired
-	private IOdrdService odrdService;
+	private IStylesService stylesService;
 	
 	/**
 	  * 分页列表查询
-	 * @param odrm
+	 * @param stylem
 	 * @param pageNo
 	 * @param pageSize
 	 * @param req
 	 * @return
 	 */
 	@GetMapping(value = "/list")
-	public Result<IPage<Odrm>> queryPageList(Odrm odrm,
+	public Result<IPage<Stylem>> queryPageList(Stylem stylem,
 									  @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
 									  @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
 									  HttpServletRequest req) {
-		Result<IPage<Odrm>> result = new Result<IPage<Odrm>>();
-		QueryWrapper<Odrm> queryWrapper = QueryGenerator.initQueryWrapper(odrm, req.getParameterMap());
-		Page<Odrm> page = new Page<Odrm>(pageNo, pageSize);
-		IPage<Odrm> pageList = odrmService.page(page, queryWrapper);
+		Result<IPage<Stylem>> result = new Result<IPage<Stylem>>();
+		QueryWrapper<Stylem> queryWrapper = QueryGenerator.initQueryWrapper(stylem, req.getParameterMap());
+		Page<Stylem> page = new Page<Stylem>(pageNo, pageSize);
+		IPage<Stylem> pageList = stylemService.page(page, queryWrapper);
 		result.setSuccess(true);
 		result.setResult(pageList);
 		return result;
@@ -77,16 +77,17 @@ public class OdrmController {
 	
 	/**
 	  *   添加
-	 * @param odrmPage
+	 * @param stylemPage
 	 * @return
 	 */
 	@PostMapping(value = "/add")
-	public Result<Odrm> add(@RequestBody OdrmPage odrmPage) {
-		Result<Odrm> result = new Result<Odrm>();
+	public Result<Stylem> add(@RequestBody StylemPage stylemPage) {
+		Result<Stylem> result = new Result<Stylem>();
 		try {
-			Odrm odrm = new Odrm();
-			BeanUtils.copyProperties(odrmPage, odrm);
-			odrmService.saveMain(odrm, odrmPage.getOdrdList());
+			Stylem stylem = new Stylem();
+			BeanUtils.copyProperties(stylemPage, stylem);
+			
+			stylemService.saveMain(stylem, stylemPage.getStylesList());
 			result.success("添加成功！");
 		} catch (Exception e) {
 			log.error(e.getMessage(),e);
@@ -97,20 +98,38 @@ public class OdrmController {
 	
 	/**
 	  *  编辑
-	 * @param odrm
+	 * @param stylem
 	 * @return
 	 */
 	@PutMapping(value = "/edit")
-	public Result<Odrm> edit(@RequestBody OdrmPage odrmPage) {
-		Result<Odrm> result = new Result<Odrm>();
-		Odrm odrm = odrmService.getById(odrmPage.getId());
-		if(odrm==null) {
+	public Result<Stylem> edit(@RequestBody Stylem stylem) {
+		Result<Stylem> result = new Result<Stylem>();
+		Stylem stylemEntity = stylemService.getById(stylem.getId());
+		if(stylemEntity==null) {
 			result.error500("未找到对应实体");
 		}else {
-			odrmPage.setUpdateTime(new Date());
-			odrmService.updateMain(odrm, odrmPage.getOdrdList());
+			stylem.setUpdateTime(new Date());
+			boolean ok = stylemService.updateById(stylem);
+			//TODO 返回false说明什么？
+			if(ok) {
+				result.success("修改成功!");
+			}
+		}
+	
+		/**	此段在更新时,会将【创建时间】修改为当天的日期
+		Result<Stylem> result = new Result<Stylem>();
+		Stylem stylem = new Stylem();
+		BeanUtils.copyProperties(stylemPage, stylem);
+		Stylem stylemEntity = stylemService.getById(stylem.getId());
+		if(stylemEntity==null) {
+			result.error500("未找到对应实体");
+		}else {
+			boolean ok = stylemService.updateById(stylem);
+			stylemService.updateMain(stylem, stylemPage.getStylesList());
 			result.success("修改成功!");
 		}
+		*/
+		
 		return result;
 	}
 	
@@ -122,7 +141,7 @@ public class OdrmController {
 	@DeleteMapping(value = "/delete")
 	public Result<?> delete(@RequestParam(name="id",required=true) String id) {
 		try {
-			odrmService.delMain(id);
+			stylemService.delMain(id);
 		} catch (Exception e) {
 			log.error("删除失败",e.getMessage());
 			return Result.error("删除失败!");
@@ -136,12 +155,12 @@ public class OdrmController {
 	 * @return
 	 */
 	@DeleteMapping(value = "/deleteBatch")
-	public Result<Odrm> deleteBatch(@RequestParam(name="ids",required=true) String ids) {
-		Result<Odrm> result = new Result<Odrm>();
+	public Result<Stylem> deleteBatch(@RequestParam(name="ids",required=true) String ids) {
+		Result<Stylem> result = new Result<Stylem>();
 		if(ids==null || "".equals(ids.trim())) {
 			result.error500("参数不识别！");
 		}else {
-			this.odrmService.delBatchMain(Arrays.asList(ids.split(",")));
+			this.stylemService.delBatchMain(Arrays.asList(ids.split(",")));
 			result.success("删除成功!");
 		}
 		return result;
@@ -153,13 +172,13 @@ public class OdrmController {
 	 * @return
 	 */
 	@GetMapping(value = "/queryById")
-	public Result<Odrm> queryById(@RequestParam(name="id",required=true) String id) {
-		Result<Odrm> result = new Result<Odrm>();
-		Odrm odrm = odrmService.getById(id);
-		if(odrm==null) {
+	public Result<Stylem> queryById(@RequestParam(name="id",required=true) String id) {
+		Result<Stylem> result = new Result<Stylem>();
+		Stylem stylem = stylemService.getById(id);
+		if(stylem==null) {
 			result.error500("未找到对应实体");
 		}else {
-			result.setResult(odrm);
+			result.setResult(stylem);
 			result.setSuccess(true);
 		}
 		return result;
@@ -170,11 +189,11 @@ public class OdrmController {
 	 * @param id
 	 * @return
 	 */
-	@GetMapping(value = "/queryOdrdByMainId")
-	public Result<List<Odrd>> queryOdrdListByMainId(@RequestParam(name="id",required=true) String id) {
-		Result<List<Odrd>> result = new Result<List<Odrd>>();
-		List<Odrd> odrdList = odrdService.selectByMainId(id);
-		result.setResult(odrdList);
+	@GetMapping(value = "/queryStylesByMainId")
+	public Result<List<Styles>> queryStylesListByMainId(@RequestParam(name="id",required=true) String id) {
+		Result<List<Styles>> result = new Result<List<Styles>>();
+		List<Styles> stylesList = stylesService.selectByMainId(id);
+		result.setResult(stylesList);
 		result.setSuccess(true);
 		return result;
 	}
@@ -188,13 +207,13 @@ public class OdrmController {
   @RequestMapping(value = "/exportXls")
   public ModelAndView exportXls(HttpServletRequest request, HttpServletResponse response) {
       // Step.1 组装查询条件
-      QueryWrapper<Odrm> queryWrapper = null;
+      QueryWrapper<Stylem> queryWrapper = null;
       try {
           String paramsStr = request.getParameter("paramsStr");
           if (oConvertUtils.isNotEmpty(paramsStr)) {
               String deString = URLDecoder.decode(paramsStr, "UTF-8");
-              Odrm odrm = JSON.parseObject(deString, Odrm.class);
-              queryWrapper = QueryGenerator.initQueryWrapper(odrm, request.getParameterMap());
+              Stylem stylem = JSON.parseObject(deString, Stylem.class);
+              queryWrapper = QueryGenerator.initQueryWrapper(stylem, request.getParameterMap());
           }
       } catch (UnsupportedEncodingException e) {
           e.printStackTrace();
@@ -202,19 +221,19 @@ public class OdrmController {
 
       //Step.2 AutoPoi 导出Excel
       ModelAndView mv = new ModelAndView(new JeecgEntityExcelView());
-      List<OdrmPage> pageList = new ArrayList<OdrmPage>();
-      List<Odrm> odrmList = odrmService.list(queryWrapper);
-      for (Odrm odrm : odrmList) {
-          OdrmPage vo = new OdrmPage();
-          BeanUtils.copyProperties(odrm, vo);
-          List<Odrd> odrdList = odrdService.selectByMainId(odrm.getId());
-          vo.setOdrdList(odrdList);
+      List<StylemPage> pageList = new ArrayList<StylemPage>();
+      List<Stylem> stylemList = stylemService.list(queryWrapper);
+      for (Stylem stylem : stylemList) {
+          StylemPage vo = new StylemPage();
+          BeanUtils.copyProperties(stylem, vo);
+          List<Styles> stylesList = stylesService.selectByMainId(stylem.getId());
+          vo.setStylesList(stylesList);
           pageList.add(vo);
       }
       //导出文件名称
-      mv.addObject(NormalExcelConstants.FILE_NAME, "订单主表列表");
-      mv.addObject(NormalExcelConstants.CLASS, OdrmPage.class);
-      mv.addObject(NormalExcelConstants.PARAMS, new ExportParams("订单主表列表数据", "导出人:Jeecg", "导出信息"));
+      mv.addObject(NormalExcelConstants.FILE_NAME, "鞋型基本资料表列表");
+      mv.addObject(NormalExcelConstants.CLASS, StylemPage.class);
+      mv.addObject(NormalExcelConstants.PARAMS, new ExportParams("鞋型基本资料表列表数据", "导出人:Jeecg", "导出信息"));
       mv.addObject(NormalExcelConstants.DATA_LIST, pageList);
       return mv;
   }
@@ -237,11 +256,11 @@ public class OdrmController {
           params.setHeadRows(1);
           params.setNeedSave(true);
           try {
-              List<OdrmPage> list = ExcelImportUtil.importExcel(file.getInputStream(), OdrmPage.class, params);
-              for (OdrmPage page : list) {
-                  Odrm po = new Odrm();
+              List<StylemPage> list = ExcelImportUtil.importExcel(file.getInputStream(), StylemPage.class, params);
+              for (StylemPage page : list) {
+                  Stylem po = new Stylem();
                   BeanUtils.copyProperties(page, po);
-                  odrmService.saveMain(po, page.getOdrdList());
+                  stylemService.saveMain(po, page.getStylesList());
               }
               return Result.ok("文件导入成功！数据行数:" + list.size());
           } catch (Exception e) {

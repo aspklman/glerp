@@ -1,4 +1,4 @@
-package org.jeecg.modules.order.controller;
+package org.jeecg.modules.scan.controller;
 
 import java.io.UnsupportedEncodingException;
 import java.io.IOException;
@@ -21,11 +21,11 @@ import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.query.QueryGenerator;
 import org.jeecg.common.util.oConvertUtils;
-import org.jeecg.modules.order.entity.Odrd;
-import org.jeecg.modules.order.entity.Odrm;
-import org.jeecg.modules.order.vo.OdrmPage;
-import org.jeecg.modules.order.service.IOdrmService;
-import org.jeecg.modules.order.service.IOdrdService;
+import org.jeecg.modules.scan.entity.Giftd;
+import org.jeecg.modules.scan.entity.Giftm;
+import org.jeecg.modules.scan.vo.GiftmPage;
+import org.jeecg.modules.scan.service.IGiftmService;
+import org.jeecg.modules.scan.service.IGiftdService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -39,37 +39,37 @@ import lombok.extern.slf4j.Slf4j;
 import com.alibaba.fastjson.JSON;
 
  /**
- * @Description: 订单主表
+ * @Description: 礼品鞋主表
  * @Author: jeecg-boot
- * @Date:   2019-07-20 10:01:01
+ * @Date:   2019-08-20 14:36:39
  * @Version: V1.0
  */
 @RestController
-@RequestMapping("/order/odrm")
+@RequestMapping("/scan/giftm")
 @Slf4j
-public class OdrmController {
+public class GiftmController {
 	@Autowired
-	private IOdrmService odrmService;
+	private IGiftmService giftmService;
 	@Autowired
-	private IOdrdService odrdService;
+	private IGiftdService giftdService;
 	
 	/**
 	  * 分页列表查询
-	 * @param odrm
+	 * @param giftm
 	 * @param pageNo
 	 * @param pageSize
 	 * @param req
 	 * @return
 	 */
 	@GetMapping(value = "/list")
-	public Result<IPage<Odrm>> queryPageList(Odrm odrm,
+	public Result<IPage<Giftm>> queryPageList(Giftm giftm,
 									  @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
 									  @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
 									  HttpServletRequest req) {
-		Result<IPage<Odrm>> result = new Result<IPage<Odrm>>();
-		QueryWrapper<Odrm> queryWrapper = QueryGenerator.initQueryWrapper(odrm, req.getParameterMap());
-		Page<Odrm> page = new Page<Odrm>(pageNo, pageSize);
-		IPage<Odrm> pageList = odrmService.page(page, queryWrapper);
+		Result<IPage<Giftm>> result = new Result<IPage<Giftm>>();
+		QueryWrapper<Giftm> queryWrapper = QueryGenerator.initQueryWrapper(giftm, req.getParameterMap());
+		Page<Giftm> page = new Page<Giftm>(pageNo, pageSize);
+		IPage<Giftm> pageList = giftmService.page(page, queryWrapper);
 		result.setSuccess(true);
 		result.setResult(pageList);
 		return result;
@@ -77,16 +77,16 @@ public class OdrmController {
 	
 	/**
 	  *   添加
-	 * @param odrmPage
+	 * @param giftmPage
 	 * @return
 	 */
 	@PostMapping(value = "/add")
-	public Result<Odrm> add(@RequestBody OdrmPage odrmPage) {
-		Result<Odrm> result = new Result<Odrm>();
+	public Result<Giftm> add(@RequestBody GiftmPage giftmPage) {
+		Result<Giftm> result = new Result<Giftm>();
 		try {
-			Odrm odrm = new Odrm();
-			BeanUtils.copyProperties(odrmPage, odrm);
-			odrmService.saveMain(odrm, odrmPage.getOdrdList());
+			Giftm giftm = new Giftm();
+			BeanUtils.copyProperties(giftmPage, giftm);
+			giftmService.saveMain(giftm, giftmPage.getGiftdList());
 			result.success("添加成功！");
 		} catch (Exception e) {
 			log.error(e.getMessage(),e);
@@ -97,20 +97,36 @@ public class OdrmController {
 	
 	/**
 	  *  编辑
-	 * @param odrm
+	 * @param giftm
 	 * @return
 	 */
 	@PutMapping(value = "/edit")
-	public Result<Odrm> edit(@RequestBody OdrmPage odrmPage) {
-		Result<Odrm> result = new Result<Odrm>();
-		Odrm odrm = odrmService.getById(odrmPage.getId());
-		if(odrm==null) {
+	public Result<Giftm> edit(@RequestBody GiftmPage giftmPage) {
+		Result<Giftm> result = new Result<Giftm>();
+		Giftm giftm = giftmService.getById(giftmPage.getId());
+		if(giftm==null) {
 			result.error500("未找到对应实体");
 		}else {
-			odrmPage.setUpdateTime(new Date());
-			odrmService.updateMain(odrm, odrmPage.getOdrdList());
+			giftmPage.setUpdateTime(new Date());
+			giftmService.updateById(giftm);
+			giftmService.updateMain(giftm, giftmPage.getGiftdList());
 			result.success("修改成功!");
 		}
+	
+		/**	此段在更新时,会将【创建时间】修改为当天的日期
+		Result<Giftm> result = new Result<Giftm>();
+		Giftm giftm = new Giftm();
+		BeanUtils.copyProperties(giftmPage, giftm);
+		Giftm giftmEntity = giftmService.getById(giftm.getId());
+		if(giftmEntity==null) {
+			result.error500("未找到对应实体");
+		}else {
+			boolean ok = giftmService.updateById(giftm);
+			giftmService.updateMain(giftm, giftmPage.getGiftdList());
+			result.success("修改成功!");
+		}
+		*/
+		
 		return result;
 	}
 	
@@ -122,7 +138,7 @@ public class OdrmController {
 	@DeleteMapping(value = "/delete")
 	public Result<?> delete(@RequestParam(name="id",required=true) String id) {
 		try {
-			odrmService.delMain(id);
+			giftmService.delMain(id);
 		} catch (Exception e) {
 			log.error("删除失败",e.getMessage());
 			return Result.error("删除失败!");
@@ -136,12 +152,12 @@ public class OdrmController {
 	 * @return
 	 */
 	@DeleteMapping(value = "/deleteBatch")
-	public Result<Odrm> deleteBatch(@RequestParam(name="ids",required=true) String ids) {
-		Result<Odrm> result = new Result<Odrm>();
+	public Result<Giftm> deleteBatch(@RequestParam(name="ids",required=true) String ids) {
+		Result<Giftm> result = new Result<Giftm>();
 		if(ids==null || "".equals(ids.trim())) {
 			result.error500("参数不识别！");
 		}else {
-			this.odrmService.delBatchMain(Arrays.asList(ids.split(",")));
+			this.giftmService.delBatchMain(Arrays.asList(ids.split(",")));
 			result.success("删除成功!");
 		}
 		return result;
@@ -153,13 +169,13 @@ public class OdrmController {
 	 * @return
 	 */
 	@GetMapping(value = "/queryById")
-	public Result<Odrm> queryById(@RequestParam(name="id",required=true) String id) {
-		Result<Odrm> result = new Result<Odrm>();
-		Odrm odrm = odrmService.getById(id);
-		if(odrm==null) {
+	public Result<Giftm> queryById(@RequestParam(name="id",required=true) String id) {
+		Result<Giftm> result = new Result<Giftm>();
+		Giftm giftm = giftmService.getById(id);
+		if(giftm==null) {
 			result.error500("未找到对应实体");
 		}else {
-			result.setResult(odrm);
+			result.setResult(giftm);
 			result.setSuccess(true);
 		}
 		return result;
@@ -170,11 +186,11 @@ public class OdrmController {
 	 * @param id
 	 * @return
 	 */
-	@GetMapping(value = "/queryOdrdByMainId")
-	public Result<List<Odrd>> queryOdrdListByMainId(@RequestParam(name="id",required=true) String id) {
-		Result<List<Odrd>> result = new Result<List<Odrd>>();
-		List<Odrd> odrdList = odrdService.selectByMainId(id);
-		result.setResult(odrdList);
+	@GetMapping(value = "/queryGiftdByMainId")
+	public Result<List<Giftd>> queryGiftdListByMainId(@RequestParam(name="id",required=true) String id) {
+		Result<List<Giftd>> result = new Result<List<Giftd>>();
+		List<Giftd> giftdList = giftdService.selectByMainId(id);
+		result.setResult(giftdList);
 		result.setSuccess(true);
 		return result;
 	}
@@ -188,13 +204,13 @@ public class OdrmController {
   @RequestMapping(value = "/exportXls")
   public ModelAndView exportXls(HttpServletRequest request, HttpServletResponse response) {
       // Step.1 组装查询条件
-      QueryWrapper<Odrm> queryWrapper = null;
+      QueryWrapper<Giftm> queryWrapper = null;
       try {
           String paramsStr = request.getParameter("paramsStr");
           if (oConvertUtils.isNotEmpty(paramsStr)) {
               String deString = URLDecoder.decode(paramsStr, "UTF-8");
-              Odrm odrm = JSON.parseObject(deString, Odrm.class);
-              queryWrapper = QueryGenerator.initQueryWrapper(odrm, request.getParameterMap());
+              Giftm giftm = JSON.parseObject(deString, Giftm.class);
+              queryWrapper = QueryGenerator.initQueryWrapper(giftm, request.getParameterMap());
           }
       } catch (UnsupportedEncodingException e) {
           e.printStackTrace();
@@ -202,19 +218,19 @@ public class OdrmController {
 
       //Step.2 AutoPoi 导出Excel
       ModelAndView mv = new ModelAndView(new JeecgEntityExcelView());
-      List<OdrmPage> pageList = new ArrayList<OdrmPage>();
-      List<Odrm> odrmList = odrmService.list(queryWrapper);
-      for (Odrm odrm : odrmList) {
-          OdrmPage vo = new OdrmPage();
-          BeanUtils.copyProperties(odrm, vo);
-          List<Odrd> odrdList = odrdService.selectByMainId(odrm.getId());
-          vo.setOdrdList(odrdList);
+      List<GiftmPage> pageList = new ArrayList<GiftmPage>();
+      List<Giftm> giftmList = giftmService.list(queryWrapper);
+      for (Giftm giftm : giftmList) {
+          GiftmPage vo = new GiftmPage();
+          BeanUtils.copyProperties(giftm, vo);
+          List<Giftd> giftdList = giftdService.selectByMainId(giftm.getId());
+          vo.setGiftdList(giftdList);
           pageList.add(vo);
       }
       //导出文件名称
-      mv.addObject(NormalExcelConstants.FILE_NAME, "订单主表列表");
-      mv.addObject(NormalExcelConstants.CLASS, OdrmPage.class);
-      mv.addObject(NormalExcelConstants.PARAMS, new ExportParams("订单主表列表数据", "导出人:Jeecg", "导出信息"));
+      mv.addObject(NormalExcelConstants.FILE_NAME, "礼品鞋主表列表");
+      mv.addObject(NormalExcelConstants.CLASS, GiftmPage.class);
+      mv.addObject(NormalExcelConstants.PARAMS, new ExportParams("礼品鞋主表列表数据", "导出人:Jeecg", "导出信息"));
       mv.addObject(NormalExcelConstants.DATA_LIST, pageList);
       return mv;
   }
@@ -237,11 +253,11 @@ public class OdrmController {
           params.setHeadRows(1);
           params.setNeedSave(true);
           try {
-              List<OdrmPage> list = ExcelImportUtil.importExcel(file.getInputStream(), OdrmPage.class, params);
-              for (OdrmPage page : list) {
-                  Odrm po = new Odrm();
+              List<GiftmPage> list = ExcelImportUtil.importExcel(file.getInputStream(), GiftmPage.class, params);
+              for (GiftmPage page : list) {
+                  Giftm po = new Giftm();
                   BeanUtils.copyProperties(page, po);
-                  odrmService.saveMain(po, page.getOdrdList());
+                  giftmService.saveMain(po, page.getGiftdList());
               }
               return Result.ok("文件导入成功！数据行数:" + list.size());
           } catch (Exception e) {

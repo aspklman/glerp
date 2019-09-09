@@ -92,7 +92,6 @@ public class ${entityName}Controller {
 		try {
 			${entityName} ${entityName?uncap_first} = new ${entityName}();
 			BeanUtils.copyProperties(${entityName?uncap_first}Page, ${entityName?uncap_first});
-			
 			${entityName?uncap_first}Service.saveMain(${entityName?uncap_first}, <#list subTables as sub>${entityName?uncap_first}Page.get${sub.entityName}List()<#if sub_has_next>,</#if></#list>);
 			result.success("添加成功！");
 		} catch (Exception e) {
@@ -108,18 +107,16 @@ public class ${entityName}Controller {
 	 * @return
 	 */
 	@PutMapping(value = "/edit")
-	public Result<${entityName}> edit(@RequestBody ${entityName} ${entityName?uncap_first}) {
+	public Result<${entityName}> edit(@RequestBody ${entityName}Page ${entityName?uncap_first}Page) {
 		Result<${entityName}> result = new Result<${entityName}>();
-		${entityName} ${entityName?uncap_first}Entity = ${entityName?uncap_first}Service.getById(${entityName?uncap_first}.getId());
-		if(${entityName?uncap_first}Entity==null) {
+		${entityName} ${entityName?uncap_first} = ${entityName?uncap_first}Service.getById(${entityName?uncap_first}Page.getId());
+		if(${entityName?uncap_first}==null) {
 			result.error500("未找到对应实体");
 		}else {
-			${entityName?uncap_first}.setUpdateTime(new Date());
-			boolean ok = ${entityName?uncap_first}Service.updateById(${entityName?uncap_first});
-			//TODO 返回false说明什么？
-			if(ok) {
-				result.success("修改成功!");
-			}
+			${entityName?uncap_first}Page.setUpdateTime(new Date());
+			${entityName?uncap_first}Service.updateById(${entityName?uncap_first});
+			${entityName?uncap_first}Service.updateMain(${entityName?uncap_first}, <#list subTables as sub>${entityName?uncap_first}Page.get${sub.entityName}List()<#if sub_has_next>,</#if></#list>);
+			result.success("修改成功!");
 		}
 	
 		/**	此段在更新时,会将【创建时间】修改为当天的日期
