@@ -15,7 +15,7 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
 @EnableSwagger2
 @SpringBootApplication
 public class JeecgApplication {
-
+//88888888
   public static void main(String[] args) throws UnknownHostException {
     //System.setProperty("spring.devtools.restart.enabled", "true");
 
